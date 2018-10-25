@@ -1,3 +1,4 @@
+/*
 #include <Encoder.h>
 #include <I2C_LCD.h>
 
@@ -7,7 +8,7 @@ int pinBoutonA = 6;
 int pinBoutonB = 8;
 I2C_LCD LCD;
 uint8_t I2C_LCD_ADDRESS = 0x51; //Device address configuration, the default value is 0x51.
-
+*/
 
 int W = 128, H = 64;
 int nb = 0;
@@ -23,102 +24,42 @@ long pose1 = 0,
      pose2 = 0,
      deltaPose1 = 0,
      deltaPose2 = 0;
-boolean interrupteurs[5] = {false, false, false, false, false};
+boolean[] interrupteurs = {false, false, false, false, false};
 
 
-class Enigme {
-  public:
-    boolean trouver = false;
-    int nb_enigme,
-        cible,
-        menu_x,
-        menu_y;
-    char nb[3] = {'0', '0', '0'};
-    
-    Enigme(int nb, int c, int x, int y) {
-      nb_enigme = nb;
-      cible = c;
-      menu_x = x;
-      menu_y = y;
-    }
-    
-    void draw() {
-        if (!(Xzone == menu_x+1 && Yzone == menu_y+1) || (edite==0 && (millis()/1000)%2 == 0))
-            LCD.DrawRectangleAt(menu_x+2, menu_y+2, 28, 28, BLACK_NO_FILL);
-        
-        if (trouver)
-          LCD.DispStringAt(nb, menu_x+4, menu_y+8);
-    }
-    
-    void update() {
-        if (menu == 0)
-          if (Xzone == menu_x+1 && Yzone == menu_y+1) {
-            if (trouver) {
-              if (edite != 0) {
-                if (abs(deltaPose1) > 3) {
-                  if (deltaPose1 > 0) edite ++;
-                  if (deltaPose1 < 0) edite --;
-                  edite = (edite+2)%3+1;
-                  LCD.CursorGotoXY(menu_x-4+edite*8, menu_y+8, 8, 16);
-                }
-                if (abs(deltaPose2) > 3) {
-                  if (deltaPose2 > 0) nb[edite-1] ++;
-                  if (deltaPose2 < 0) nb[edite-1] --;
-                  nb[edite-1] = (nb[edite-1]-'0'+10)%10+'0';
-                }
-              } else
-                if (oldBoutonA && !boutonA)
-                  menu = nb_enigme;
-              
-              if (oldBoutonB && !boutonB) {
-                  LCD.CursorGotoXY(menu_x+4, menu_y+8, 8, 16);
-                  if (edite == 0) {
-                      LCD.CursorConf(ON, 2);
-                      edite = 1;
-                  } else {
-                      LCD.CursorConf(OFF, 2);
-                      edite = 0;
-                  }
-              }
-            } else trouver = true;
-          }
-    }
-};
+Encoder enc1 = new Encoder('a', 'q');
+Encoder enc2 = new Encoder('z', 's');
+I2C_LCD LCD = new I2C_LCD();
+char pinBoutonA = 'w';
+char pinBoutonB = 'x';
 
-Enigme enigme1(1, 192, 0, 32);
-Enigme enigme2(2, 1, 32, 32);
-Enigme enigme3(3, 1, 64, 32);
-Enigme enigme4(4, 1, 96, 32);
-
+Enigme enigme1 = new Enigme(1, 192, 0, 32);
+Enigme enigme2 = new Enigme(2, 1, 32, 32);
+Enigme enigme3 = new Enigme(3, 1, 64, 32);
+Enigme enigme4 = new Enigme(4, 1, 96, 32);
+// */
 void setup() {
+    /*
     LCD.Init();
     //Wire.setClock(10000);
     Serial.begin(9600);
     Serial.println("Basic Encoder Test:");
+    */
+    background(128);
+    size(1153, 513);
+    println("Basic Encoder Test:");
+    textAlign(LEFT, TOP);
+    noSmooth();
+    strokeWeight(1);
+    // */
     pinMode(pinBoutonA, INPUT);
     pinMode(pinBoutonB, INPUT);
 }
 
-int w = 128, h = 64;
-long oldPosition  = -999;
-
 void loop() {
-    nb ++;
-    oldBoutonA = boutonA;
-    oldBoutonB = boutonB;
-    boutonA = digitalRead(pinBoutonA);
-    boutonB = digitalRead(pinBoutonB);
-    
-    deltaPose1 = enc1.read()-pose1;
-    deltaPose2 = enc2.read()-pose2;
-    pose1 = enc1.read();
-    pose2 = enc2.read();
-    
-    if (menu == -1 && !boutonA) {
-      oldBoutonA = false;
-      menu = 0;
+    if (d()) {
+      nb ++;
     }
-    
     switch(menu) {
       case 1: enigme_1(); break;
       case 2: enigme_2(); break;
@@ -129,9 +70,26 @@ void loop() {
 }
 
 void accueil() {
-    if (edite == 0) {
-      Xzone = int(Xzone+deltaPose1+128)%128;
-      Yzone = int(Yzone+deltaPose2+64)%64;
+    if (d()) {
+      oldBoutonA = boutonA;
+      oldBoutonB = boutonB;
+      boutonA = digitalRead(pinBoutonA);
+      boutonB = digitalRead(pinBoutonB);
+      
+      deltaPose1 = enc1.read()-pose1;
+      deltaPose2 = enc2.read()-pose2;
+      pose1 = enc1.read();
+      pose2 = enc2.read();
+      
+      if (menu == -1 && !boutonA) {
+        oldBoutonA = false;
+        menu = 0;
+      }
+      
+      if (edite == 0) {
+        Xzone = int(Xzone+deltaPose1+128)%128;
+        Yzone = int(Yzone+deltaPose2+64)%64;
+      }
     }
     LCD.CleanAll(WHITE);
       
@@ -197,23 +155,24 @@ void accueil() {
       LCD.DrawRectangleAt(Xzone-W, Yzone-H, 30, 30, BLACK_NO_FILL);
       LCD.DrawRectangleAt(Xzone+2-W, Yzone+2-H, 26, 26, BLACK_NO_FILL);
     }
-    delay(50);
+    sleep(50);
 }
 
 
 void enigme_1() {
     if (digitalRead(pinBoutonA)) menu = -1;
-    Serial.println(digitalRead(pinBoutonA), digitalRead(pinBoutonB));
+    println(digitalRead(pinBoutonA), digitalRead(pinBoutonB));
     LCD.CleanAll(WHITE);
     LCD.FontModeConf(Font_10x20, FM_ANL_AAA, BLACK_NO_BAC);
     LCD.DispStringAt(nb, 0, 0);
     LCD.DispStringAt("Enigme 1:", 4, 40);
 
+    
     LCD.DrawRectangleAt(10, 15, 107, 33, BLACK_FILL);
     LCD.DrawDotAt(127, 63, BLACK);
     LCD.DrawDotAt(120, 50, BLACK);
     
-    delay(500);
+    sleep(500);
 }
 
 
@@ -223,7 +182,7 @@ void enigme_2() {
     LCD.FontModeConf(Font_10x20, FM_ANL_AAA, BLACK_NO_BAC);
     LCD.DispStringAt(nb, 0, 0);
     LCD.DispStringAt("Enigme 2:", 4, 40);
-    delay(500);
+    sleep(500);
 }
 
 
@@ -233,7 +192,7 @@ void enigme_3() {
     LCD.FontModeConf(Font_10x20, FM_ANL_AAA, BLACK_NO_BAC);
     LCD.DispStringAt(nb, 0, 0);
     LCD.DispStringAt("Enigme 3:", 4, 40);
-    delay(500);
+    sleep(500);
 }
 
 
@@ -243,5 +202,5 @@ void enigme_4() {
     LCD.FontModeConf(Font_10x20, FM_ANL_AAA, BLACK_NO_BAC);
     LCD.DispStringAt(nb, 0, 0);
     LCD.DispStringAt("Enigme 4:", 4, 40);
-    delay(500);
+    sleep(500);
 }
