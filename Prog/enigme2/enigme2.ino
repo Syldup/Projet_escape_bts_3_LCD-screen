@@ -1,41 +1,47 @@
-int pinBoutonB;
+
+int pinBoutonA = 6;
+int pinBoutonB = 8;
+int barreEnigme2 = 0;
+int nombreEnigme2 = 0;
+boolean resultatEnigme2;
+boolean boutonB = false,
+     oldBoutonB = false;
+int i = 0;
+int etat = 0;
+double barre = 0;
+
 void setup() {
   // put your setup code here, to run once:
     Serial.begin(9600);
-    pinBoutonB=10;
-    pinMode(pinBoutonB,INPUT);
+    Serial.println("Basic Test:");
+    pinMode(pinBoutonA, INPUT);
+    pinMode(pinBoutonB, INPUT);
 }
 
 void loop() {
 
-    int barre = 0;
-   
-    int nbAlea = 0;
+    do {
 
-  do {  
-      if(digitalRead(pinBoutonB) == HIGH)
+    oldBoutonB = boutonB;
+    boutonB = digitalRead(pinBoutonB);
+    
+    if(boutonB && oldBoutonB == false)
+    {
+      barre+=1;
+    }
+
+      if(barre > 0)
+    {
+     barre-=0.03;
+
+     if(barre < 0)
       {
-        nbAlea=random(2);
-        if(nbAlea == 0)
-        {
-          if(barre != 0)
-          {
-            barre-=1;
-          }
-        }
+        barre = 0;
+      }
+    }      
+    Serial.println(barre);  
 
-        else
-        {
-          if(barre != 99)
-          {
-            barre+=1;
-          }
-        }
-        while(digitalRead(pinBoutonB)!= LOW)
-        {
-          
-        }
-      }  
-  }while(barre != 99);
+    }while(barre != 128);
 
+    Serial.println("GAGNER");
 }
