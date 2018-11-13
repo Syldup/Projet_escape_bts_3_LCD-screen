@@ -8,7 +8,6 @@ int pinBoutonB = 8;
 I2C_LCD LCD;
 uint8_t I2C_LCD_ADDRESS = 0x51; //Device address configuration, the default value is 0x51.
 
-
 int W = 128, H = 64;
 int menu = 0,
     Xzone = 113,
@@ -24,7 +23,6 @@ long pose1 = 0,
      deltaPose1 = 0,
      deltaPose2 = 0;
 boolean interrupteurs[5] = {false, false, false, false, false};
-
 
 class Enigme {
   public:
@@ -101,15 +99,15 @@ void setup() {
     //Wire.setClock(10000);
     Serial.begin(9600);
     Serial.println("Basic Test:");
-    pinMode(pinBoutonA, INPUT);
-    pinMode(pinBoutonB, INPUT);
+    //pinMode(pinBoutonA, INPUT);
+    //pinMode(pinBoutonB, INPUT);
 }
 
 void loop() {
     oldBoutonA = boutonA;
     oldBoutonB = boutonB;
-    boutonA = digitalRead(pinBoutonA);
-    boutonB = digitalRead(pinBoutonB);
+    //boutonA = digitalRead(pinBoutonA);
+    //boutonB = digitalRead(pinBoutonB);
     
     deltaPose1 = enc1.read()-pose1;
     deltaPose2 = enc2.read()-pose2;
@@ -120,7 +118,17 @@ void loop() {
       oldBoutonA = false;
       menu = 0;
     }
-    
+    if (boutonA) Serial.print("true ");
+    else Serial.print("false ");
+    if (boutonB) Serial.print("true ");
+    else Serial.print("false ");
+    Serial.print(deltaPose1);
+    Serial.print(" ");
+    Serial.print(deltaPose2);
+    Serial.print(" ");
+    Serial.print(pose1);
+    Serial.print(" ");
+    Serial.println(pose2);
     switch(menu) {
       case 1: enigme_1(); break;
       case 2: enigme_2(); break;
@@ -199,7 +207,6 @@ void accueil() {
       LCD.DrawRectangleAt(Xzone-W, Yzone-H, 30, 30, BLACK_NO_FILL);
       LCD.DrawRectangleAt(Xzone+2-W, Yzone+2-H, 26, 26, BLACK_NO_FILL);
     }
-    delay(50);
 }
 
 
