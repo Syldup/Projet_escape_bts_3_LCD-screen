@@ -22,12 +22,8 @@ long pose1 = 0,
      deltaPose1 = 0;
 
 boolean interrupteurs[9] = {false};
-int addressIP[4] = {10, 16, 42, 1};
-char tabEnigme[4][4] = {{'0', '0', '0', '\0'},
-                        {'0', '0', '0', '\0'},
-                        {'0', '0', '0', '\0'},
-                        {'0', '0', '0', '\0'}};
-
+String addressIP[4] = {"10", "16", "42", "1"};
+String tabEnigme[4] = {"000", "000", "000", "000"};
 
 void setup() {
   LCD.Init();
@@ -39,14 +35,19 @@ void setup() {
 }
 
 void loop() {
+    delay(1);
     oldBoutonA = boutonA;
     oldBoutonB = boutonB;
     boutonA = digitalRead(pinBoutonA);
     boutonB = digitalRead(pinBoutonB);
-    
+      
     deltaPose1 = enc1.read()-pose1;
     pose1 = enc1.read();
-    
+
+    int deltaPose = pose1/4;
+    if (deltaPose != 0)
+        enc1.write(0);
+      
     if (!acceuilLoad && !boutonA) {
       oldBoutonA = false;
       acceuilLoad = true;
@@ -55,14 +56,14 @@ void loop() {
     
     if (!oldBoutonB && boutonB) {
       for (int i=0; i<4; i++)
-        if (Xzone == i*32+1 && Yzone == 32+1) {
+        if (Xzone == i*32+1 && Yzone == 32+1 && tabEnigme[i].length() != 0) {
           edite ++;
           if (edite > 3) {
               LCD.CursorConf(OFF, 4);
               cursorOn = false;
               edite = 0;
-              if (addressIP[i] == atoi(tabEnigme[i]))
-                addressIP[i] = -1;
+              if (addressIP[i].toInt() == tabEnigme[i].toInt())
+                tabEnigme[i] = "";
           } else {
             LCD.CursorGotoXY(i*32-4+edite*8, 32+8, 8, 16);
             if (!cursorOn) {
@@ -77,14 +78,12 @@ void loop() {
         if (!oldBoutonA && boutonA) {
             int nextMenu = 0;
             for (int i=0; i<4; i++)
-              if (Xzone == i*32+1 && Yzone == 32+1)
+              if (Xzone == i*32+1 && Yzone == 32+1 && tabEnigme[i].length() != 0)
                 nextMenu = i+1;
             
             allNor = !allNor || nextMenu != 0;
             if (allNor) LCD.DisplayConf(AllNOR);
             else  LCD.DisplayConf(AllREV);
-            Xzone = 1+int(Xzone/4)*4;
-            Yzone = 1+int(Yzone/4)*4;
 
             acceuilLoad = false;
             switch(nextMenu) {
@@ -95,19 +94,17 @@ void loop() {
               default: acceuilLoad = true;
             }
         }
-        if (deltaPose1 != 0) {
-            if (allNor) Xzone = int(Xzone+deltaPose1+128)%128;
-            else Yzone = int(Yzone+deltaPose1+64)%64;
+        if (deltaPose != 0) {
+            if (allNor) Xzone = int(Xzone+deltaPose*4+128)%128;
+            else Yzone = int(Yzone+deltaPose*4+64)%64;
             updateAcceil();
         }
-    } else if (abs(deltaPose1) > 0) {
+    } else if (deltaPose != 0) {
         for (int i=0; i<4; i++)
           if (Xzone == i*32+1 && Yzone == 32+1) {
-            if (deltaPose1 > 0) tabEnigme[i][edite-1] ++;
-            if (deltaPose1 < 0) tabEnigme[i][edite-1] --;
-            tabEnigme[i][edite-1] = char((tabEnigme[i][edite-1]-'0'+10)%10+'0');
+            tabEnigme[i][edite-1] = char((tabEnigme[i][edite-1]+deltaPose-'0'+10)%10+'0');
             LCD.FontModeConf(Font_8x16_1, FM_ANL_AAA, BLACK_BAC);
-            LCD.DispStringAt(tabEnigme[i], i*32+4, 32+8);
+            LCD.DispStringAt(tabEnigme[i].c_str(), i*32+4, 32+8);
           }
     }
 }
@@ -117,39 +114,44 @@ void updateAcceil() {
     
     LCD.DrawRectangleAt(34, 2, 60, 28, BLACK_NO_FILL);
     LCD.FontModeConf(Font_6x12, FM_ANL_AAA, BLACK_NO_BAC);
-    LCD.DispStringAt("Enigme "+edite, 37, 9);
+    char tmp[25];
+    sprintf(tmp, "Enigme %d", edite);
+    LCD.DispStringAt(tmp, 37, 9);
       
     LCD.DrawRectangleAt(2, 2, 28, 28, BLACK_NO_FILL);
+    if (Xzone == 1 && Yzone == 1)
+        interrupteurs[0] = true;
     if (interrupteurs[0]) {
         LCD.FontModeConf(Font_8x16_1, FM_ANL_AAA, BLACK_NO_BAC);
         LCD.DispStringAt("BTS", 4, 8);
-    } else if (Xzone == 1 && Yzone == 1)
-        interrupteurs[0] = true;
+    }
     
     LCD.DrawRectangleAt(98, 2, 28, 28, BLACK_NO_FILL);
+    if (Xzone == 97 && Yzone == 1)
+        interrupteurs[1] = true;
     if (interrupteurs[1]) {
         LCD.FontModeConf(Font_10x20, FM_ANL_AAA, BLACK_NO_BAC);
-        LCD.DispStringAt("SN", 100, 6);
-    } else if (Xzone == 97 && Yzone == 1)
-        interrupteurs[1] = true;
+        LCD.DispStringAt("SN", 102, 6);
+    }
     
-    for (int i=0; i<3; i++)
-      if (interrupteurs[2+i]) {
-        LCD.DrawRectangleAt(31+i*32, 62, 2, 2, BLACK_FILL);
-      } else if (Xzone == 17+i*32 && Yzone == 49)
+    for (int i=0; i<3; i++) {
+      if (Xzone == 17+i*32 && Yzone == 49)
           interrupteurs[2+i] = true;
+      if (interrupteurs[2+i])
+        LCD.DrawRectangleAt(31+i*32, 62, 2, 2, BLACK_FILL);
+    }
           
     LCD.FontModeConf(Font_8x16_1, FM_ANL_AAA, BLACK_NO_BAC);
     for (int i=0; i<4; i++) {
         int x = i*32, y = 32;
-        LCD.DrawRectangleAt(x, y, 30, 30, WHITE_FILL);
-        if (addressIP[i] != -1) {
+        //LCD.DrawRectangleAt(x, y, 30, 30, WHITE_FILL);
+        if (tabEnigme[i].length() != 0) {
             if (Xzone == x+1 && Yzone == y+1) interrupteurs[5+i] = true;
             if (interrupteurs[5+i])
-              LCD.DispStringAt(tabEnigme[i], x+4, y+8);
+              LCD.DispStringAt(tabEnigme[i].c_str(), x+4, y+8);
             if (!(Xzone == x+1 && Yzone == y+1 && edite == 0)) 
               LCD.DrawRectangleAt(x+2, y+2, 28, 28, BLACK_NO_FILL);
-        } else LCD.DispStringAt(atoi(tabEnigme[i]), x+4, y+8);
+        } else LCD.DispStringAt(addressIP[i].c_str(), x+4, y+8);
     }
       
     drawRectNoFill(Xzone, Yzone, 30, 30);
