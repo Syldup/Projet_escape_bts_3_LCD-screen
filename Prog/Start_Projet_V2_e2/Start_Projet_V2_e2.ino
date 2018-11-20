@@ -2,7 +2,6 @@
 #include <I2C_LCD.h>
 
 I2C_LCD LCD;
-extern GUI_Bitmap_t bmCarte;
 Encoder enc1(2, 3);
 int pinBoutonA = 6;
 int pinBoutonB = 8;
@@ -181,7 +180,7 @@ void enigme_1() {
     delay(1000);
 }
 
-void enigme_2() {
+void enigme_3() {
     LCD.CleanAll(WHITE);
     delay(1000);
 }
@@ -191,8 +190,7 @@ void enigme_4() {
     delay(1000);
 }
 
-// ======================== Enigme 3 ======================== //
-
+// ======================== Enigme 2 ======================== //
 void updateInput() {
     delay(1);
     oldBoutonA = boutonA;
@@ -206,110 +204,29 @@ void updateInput() {
     if (deltaPose != 0)
         enc1.write(0);
 }
-/*
-int tab_carte [5][4] = {{197,  19, 112, 179},
-                       {253, 197,  59,  19},
-                       {247,  42, 179, 187},
-                       {109, 109, 187, 247},
-                       { -1, 253,  59, 112}};/*/
-int tab_carte [5][4] = {{43, 43, 43, 43},
-                       {43, 43, 43, 43},
-                       {43, 42, 43, 43},
-                       {43, 43, 43, 43},
-                       {-1, 43, 43, 43}};// */
-int nbPaire = 9;
 
-void enigme_3() {
-    int carte = 0,
-        oldCarte = -1,
-        carteSelect = -1;
+void enigme_2() {
+    int i = 0;
+    int etat = 0;
+    double barre = 0;
+    
     LCD.CleanAll(WHITE);
-    LCD.FontModeConf(Font_6x8, FM_ANL_AAA, BLACK_NO_BAC);
-    for (int i=0; i<5; i++)
-      for (int j=3; j>=0; j--)
-        if (tab_carte[i][j] >= 0) {
-          draw_carte(i, j, false);
-          delay(250);
-        }
-    LCD.DrawRectangleAt(114, 6, 10, 6, BLACK_NO_FILL);
-    LCD.DrawRectangleAt(116, 4, 10, 6, BLACK_NO_FILL);
-    LCD.DrawRectangleAt(117, 5, 8, 4, WHITE_FILL);
-    LCD.FontModeConf(Font_8x16_2, FM_ANL_AAA, BLACK_BAC);
-    char tmp[4];
-    sprintf(tmp, "%d", nbPaire);
-    LCD.DispStringAt(tmp, 104, 1);
-
     do {
-        updateInput();
-        oldCarte = carte;
+        if (barre < 128) {
+            updateInput();
+            
+            if(boutonB && !oldBoutonB)
+                barre += 1;
         
-        do {
-            if (deltaPose == 0) deltaPose = 1;
-            else carte = (carte+deltaPose+20)%20;
-        } while(tab_carte[carte%5][carte/5] < 0 || (carte == carteSelect && nbPaire != 0));
-        
-        if (oldCarte != carte || !loaded) {
-          LCD.CursorGotoXY(1+(carte%5)*26, 2+(carte/5)*16, 22, 12);
-          draw_carte(oldCarte%5, oldCarte/5, oldCarte == carteSelect);
-        }
-        if (!cursorOn) {
-          LCD.CursorConf(ON, 6);
-          cursorOn = true;
-        }
-                
-        if (!oldBoutonB && boutonB) {
-            if (carteSelect == -1) {
-              carteSelect = carte;
-              draw_carte(carteSelect%5, carteSelect/5, true);
-            } else if (nbPaire != 0) {
-              LCD.CursorConf(OFF, 6);
-              cursorOn = false;
-              
-              draw_carte(carteSelect%5, carteSelect/5, true);
-              draw_carte(carte%5, carte/5, true);
-              delay(200);
-              if (tab_carte[carteSelect%5][carteSelect/5] == tab_carte[carte%5][carte/5]) {
-                tab_carte[carteSelect%5][carteSelect/5] = -1;
-                tab_carte[carte%5][carte/5] = -1;
-                nbPaire --;
-                LCD.FontModeConf(Font_8x16_2, FM_ANL_AAA, BLACK_BAC);
-                char tmp[4];
-                sprintf(tmp, "%d", nbPaire);
-                LCD.DispStringAt(tmp, 104, 1);
-              }
-              draw_carte(carteSelect%5, carteSelect/5, false);
-              draw_carte(carte%5, carte/5, false);
-              carteSelect = -1;
-              LCD.CursorConf(ON, 6);
-              cursorOn = true;
+            if(barre > 0)
+            {
+               barre -= 0.03;
+               if(barre < 0)
+                   barre = 0;
             }
-        }
-      
-        while (!loaded) {
-          updateInput();
-          loaded = !boutonA;
+            Serial.println(barre);
+        } else {
+            Serial.println("GAGNER");
         }
     } while (!(boutonA && !oldBoutonA));
-    loaded = false;
-    LCD.CursorConf(OFF, 6);
-    cursorOn = false;
-    enc1.write(0);
-    deltaPose = 0;
-}
-
-void draw_carte(int x, int y, boolean showNB) {
-    int i = x*26,
-        j = y*16+1;
-    if (tab_carte[x][y] > 0) {
-        LCD.WorkingModeConf(ON, ON, WM_BitmapMode);
-        LCD.DrawScreenAreaAt(&bmCarte, i, j);
-        LCD.WorkingModeConf(ON, ON, WM_CharMode);
-        if (showNB) {
-          LCD.DrawRectangleAt(i+1, j+1, 22, 12, WHITE_FILL);
-          LCD.FontModeConf(Font_6x8, FM_ANL_AAA, BLACK_NO_BAC);
-          char tmp[4];
-          sprintf(tmp, "%d", tab_carte[x][y]);
-          LCD.DispStringAt(tmp, i+3, j+3);
-        }
-    } else LCD.DrawRectangleAt(i, j, 24, 14, WHITE_FILL);
 }

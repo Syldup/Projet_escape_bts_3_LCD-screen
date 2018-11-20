@@ -17,9 +17,9 @@ boolean boutonA = false,
         oldBoutonB = false,
         cursorOn = false,
         allNor = true,
-        acceuilLoad = false;
-long pose1 = 0,
-     deltaPose1 = 0;
+        loaded = false;
+long poseEnc1 = 0,
+     deltaPose = 0;
 
 boolean interrupteurs[9] = {false};
 String addressIP[4] = {"10", "16", "42", "1"};
@@ -31,26 +31,14 @@ void setup() {
   Serial.println("Basic  Test:");
   LCD.CleanAll(WHITE);
   LCD.DisplayConf(AllNOR);
-  LCD.CursorConf(OFF, 2);
+  LCD.CursorConf(OFF, 6);
 }
 
 void loop() {
-    delay(1);
-    oldBoutonA = boutonA;
-    oldBoutonB = boutonB;
-    boutonA = digitalRead(pinBoutonA);
-    boutonB = digitalRead(pinBoutonB);
-      
-    deltaPose1 = enc1.read()-pose1;
-    pose1 = enc1.read();
-
-    int deltaPose = pose1/4;
-    if (deltaPose != 0)
-        enc1.write(0);
-      
-    if (!acceuilLoad && !boutonA) {
+    updateInput();
+    if (!loaded && !boutonA) {
       oldBoutonA = false;
-      acceuilLoad = true;
+      loaded = true;
       updateAcceil();
     }
     
@@ -59,7 +47,7 @@ void loop() {
         if (Xzone == i*32+1 && Yzone == 32+1 && tabEnigme[i].length() != 0) {
           edite ++;
           if (edite > 3) {
-              LCD.CursorConf(OFF, 4);
+              LCD.CursorConf(OFF, 8);
               cursorOn = false;
               edite = 0;
               if (addressIP[i].toInt() == tabEnigme[i].toInt())
@@ -67,7 +55,7 @@ void loop() {
           } else {
             LCD.CursorGotoXY(i*32-4+edite*8, 32+8, 8, 16);
             if (!cursorOn) {
-                LCD.CursorConf(ON, 4);
+                LCD.CursorConf(ON, 8);
                 cursorOn = true;
             }
           }
@@ -85,13 +73,13 @@ void loop() {
             if (allNor) LCD.DisplayConf(AllNOR);
             else  LCD.DisplayConf(AllREV);
 
-            acceuilLoad = false;
+            loaded = false;
             switch(nextMenu) {
               case 1: enigme_1(); break;
               case 2: enigme_2(); break;
               case 3: enigme_3(); break;
               case 4: enigme_4(); break;
-              default: acceuilLoad = true;
+              default: loaded = true;
             }
         }
         if (deltaPose != 0) {
@@ -107,6 +95,12 @@ void loop() {
             LCD.DispStringAt(tabEnigme[i].c_str(), i*32+4, 32+8);
           }
     }
+    if (Yzone == 32+1)
+      for (int i=0; i<4; i++)
+        if (Xzone == i*32+1 && tabEnigme[i].length() != 0)
+          if ((millis()/1000)%2 == 0)
+               LCD.DrawRectangleAt(i*32+2, 32+2, 28, 28, BLACK_NO_FILL);
+          else LCD.DrawRectangleAt(i*32+2, 32+2, 28, 28, WHITE_NO_FILL);
 }
 
 void updateAcceil() {
@@ -182,33 +176,36 @@ void drawLine(int x, int y, int l, boolean horizontal) {
 }
 
 void enigme_1() {
-    Serial.println(digitalRead(pinBoutonA), digitalRead(pinBoutonB));
     LCD.CleanAll(WHITE);
-    LCD.FontModeConf(Font_10x20, FM_ANL_AAA, BLACK_NO_BAC);
-    LCD.DispStringAt("Enigme 1:", 4, 40);
-    delay(500);
+    delay(1000);
 }
 
 void enigme_2() {
-    Serial.println(digitalRead(pinBoutonA), digitalRead(pinBoutonB));
     LCD.CleanAll(WHITE);
-    LCD.FontModeConf(Font_10x20, FM_ANL_AAA, BLACK_NO_BAC);
-    LCD.DispStringAt("Enigme 1:", 4, 40);
-    delay(500);
+    delay(1000);
 }
 
 void enigme_3() {
-    Serial.println(digitalRead(pinBoutonA), digitalRead(pinBoutonB));
     LCD.CleanAll(WHITE);
-    LCD.FontModeConf(Font_10x20, FM_ANL_AAA, BLACK_NO_BAC);
-    LCD.DispStringAt("Enigme 1:", 4, 40);
-    delay(500);
+    delay(1000);
+}
+
+// ======================== Enigme 4 ======================== //
+void updateInput() {
+    delay(1);
+    oldBoutonA = boutonA;
+    oldBoutonB = boutonB;
+    boutonA = digitalRead(pinBoutonA);
+    boutonB = digitalRead(pinBoutonB);
+    
+    poseEnc1 = enc1.read();
+    
+    deltaPose = poseEnc1/4;
+    if (deltaPose != 0)
+        enc1.write(0);
 }
 
 void enigme_4() {
-    Serial.println(digitalRead(pinBoutonA), digitalRead(pinBoutonB));
     LCD.CleanAll(WHITE);
-    LCD.FontModeConf(Font_10x20, FM_ANL_AAA, BLACK_NO_BAC);
-    LCD.DispStringAt("Enigme 1:", 4, 40);
-    delay(500);
+    delay(1000);
 }

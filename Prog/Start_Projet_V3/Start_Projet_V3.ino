@@ -35,6 +35,20 @@ void setup() {
   LCD.CursorConf(OFF, 6);
 }
 
+void updateInput() {
+    delay(1);
+    oldBoutonA = boutonA;
+    oldBoutonB = boutonB;
+    boutonA = digitalRead(pinBoutonA);
+    boutonB = digitalRead(pinBoutonB);
+    
+    poseEnc1 = enc1.read();
+    
+    deltaPose = poseEnc1/4;
+    if (deltaPose != 0)
+        enc1.write(0);
+}
+
 void loop() {
     updateInput();
     if (!loaded && !boutonA) {
@@ -182,30 +196,31 @@ void enigme_1() {
 }
 
 void enigme_2() {
-    LCD.CleanAll(WHITE);
-    delay(1000);
-}
-
-void enigme_4() {
-    LCD.CleanAll(WHITE);
-    delay(1000);
-}
-
-// ======================== Enigme 3 ======================== //
-
-void updateInput() {
-    delay(1);
-    oldBoutonA = boutonA;
-    oldBoutonB = boutonB;
-    boutonA = digitalRead(pinBoutonA);
-    boutonB = digitalRead(pinBoutonB);
+    int i = 0;
+    int etat = 0;
+    double barre = 0;
     
-    poseEnc1 = enc1.read();
-    
-    deltaPose = poseEnc1/4;
-    if (deltaPose != 0)
-        enc1.write(0);
+    LCD.CleanAll(WHITE);
+    do {
+        if (barre < 128) {
+            updateInput();
+            
+            if(boutonB && !oldBoutonB)
+                barre += 1;
+        
+            if(barre > 0)
+            {
+               barre -= 0.03;
+               if(barre < 0)
+                   barre = 0;
+            }
+            Serial.println(barre);
+        } else {
+            Serial.println("GAGNER");
+        }
+    } while (!(boutonA && !oldBoutonA));
 }
+
 /*
 int tab_carte [5][4] = {{197,  19, 112, 179},
                        {253, 197,  59,  19},
@@ -312,4 +327,9 @@ void draw_carte(int x, int y, boolean showNB) {
           LCD.DispStringAt(tmp, i+3, j+3);
         }
     } else LCD.DrawRectangleAt(i, j, 24, 14, WHITE_FILL);
+}
+
+void enigme_4() {
+    LCD.CleanAll(WHITE);
+    delay(1000);
 }
