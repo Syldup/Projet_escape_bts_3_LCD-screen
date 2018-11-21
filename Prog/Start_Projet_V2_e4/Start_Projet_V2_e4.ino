@@ -204,8 +204,37 @@ void updateInput() {
     if (deltaPose != 0)
         enc1.write(0);
 }
-
+int nbSeq = 1;
 void enigme_4() {
     LCD.CleanAll(WHITE);
-    delay(1000);
+    int s1[7][2] = {{64, 32}, {2, 0}, {2, 3}, {4, 2}, {4, 1}, {4, 0}, {1, 3}};
+    
+    // sequence[][0] -> Longueur des segments de la sequence
+    // sequence[][1] -> Orientation des segments de la sequence
+    // sequence[0] -> Coordonner de start
+    int (*sequence)[2];
+    if (nbSeq == 1) sequence = &s1;
+    else if (nbSeq == 2) sequence = &s1;
+    else sequence = s1;
+    
+    int x = sequence[0][0], // Coordonner x sur l'écran
+        y = sequence[0][1], // Coordonner y sur l'écran
+        idx = 1, // index du segment en coure
+        d = 0, // Longueur du segment en coure
+        a = 0; // Orientation de segment en coure
+    do {
+        updateInput();
+        if (deltaPose != 0) {
+          a = (a+deltaPose+4)%4;
+        }
+        
+        if (!oldBoutonB && boutonB) {
+          
+        }
+    } while (!(boutonA && !oldBoutonA));
+    loaded = false;
+}
+
+void drawSequence(int (*sequence)[2]) {
+  int len = (sizeof(sequence) / sizeof(sequence[0]))-1;
 }

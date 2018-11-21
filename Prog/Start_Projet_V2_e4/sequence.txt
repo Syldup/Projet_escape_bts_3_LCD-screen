@@ -1,0 +1,15 @@
+# Exemple de sequence
+
+# Begin <start-x> <start-y>
+# <segment-len> <direction[z,q,s,d]>
+# <next-segment-len> <next-direction[z,q,s,d]>
+# End
+
+Begin 64 32
+2 z
+2 q
+4 s
+4 d
+4 z
+1 q
+End
