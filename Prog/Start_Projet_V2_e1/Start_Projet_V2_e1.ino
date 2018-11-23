@@ -206,6 +206,16 @@ void updateInput() {
 }
 
 void enigme_1() {
+  
+  
     LCD.CleanAll(WHITE);
+    do{
+      
+       
+
+
+      
+        } while (!(boutonA && !oldBoutonA));
+    loaded = false;
     delay(1000);
 }
