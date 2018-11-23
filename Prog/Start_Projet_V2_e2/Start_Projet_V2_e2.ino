@@ -234,10 +234,14 @@ void enigme_2() {
               if(largeurBarre < 31)
               {
                  largeurBarre += abs(deltaPose);
-                if(largeurBarre > 32)
+                 
+                 if(largeurBarre > 32)
+                 {
+                  largeurBarre = 32;
+                 }
               }
             }
-
+            
              if(largeurBarre < 0)
               {
                 largeurBarre = 1;
@@ -247,6 +251,7 @@ void enigme_2() {
 
             if (old != int(barre)) {
               old = int(barre);
+              largeurBarre-= 1;
               LCD.CleanAll(WHITE);
               LCD.DrawRectangleAt(0, 32-largeurBarre, barre, 1+largeurBarre*2, BLACK_FILL);
               LCD.DispStringAt("0", 4, 20);
