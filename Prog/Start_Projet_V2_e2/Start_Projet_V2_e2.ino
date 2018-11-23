@@ -36,6 +36,7 @@ void setup() {
 
 void loop() {
     updateInput();
+    enigme_2();
     if (!loaded && !boutonA) {
       oldBoutonA = false;
       loaded = true;
@@ -209,22 +210,52 @@ void enigme_2() {
     int i = 0;
     int etat = 0;
     double barre = 0;
+    int old = 0;
+    int largeurBarre = 1;
+    LCD.FontModeConf(Font_16x32, FM_ANL_AAA, WHITE_NO_BAC);
     
     LCD.CleanAll(WHITE);
     do {
         if (barre < 128) {
-            updateInput();
-            
-            if(boutonB && !oldBoutonB)
-                barre += 1;
-        
+            updateInput();       
+            if(boutonB  && !oldBoutonB){
+                barre += 2;
+             }    
+                 
             if(barre > 0)
             {
-               barre -= 0.03;
+               barre -= 0.01;
                if(barre < 0)
                    barre = 0;
             }
+
+            if(deltaPose != 0)
+            {
+              if(largeurBarre < 31)
+              {
+                 largeurBarre += abs(deltaPose);
+                if(largeurBarre > 32)
+              }
+            }
+
+             if(largeurBarre < 0)
+              {
+                largeurBarre = 1;
+              }
+
+             
+
+            if (old != int(barre)) {
+              old = int(barre);
+              LCD.CleanAll(WHITE);
+              LCD.DrawRectangleAt(0, 32-largeurBarre, barre, 1+largeurBarre*2, BLACK_FILL);
+              LCD.DispStringAt("0", 4, 20);
+            }
+            
+            //delay(20);
+            
             Serial.println(barre);
+
         } else {
             Serial.println("GAGNER");
         }
