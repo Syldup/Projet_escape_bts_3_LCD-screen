@@ -1,31 +1,59 @@
+#!/usr/local/bin/php -q
 <?php
 error_reporting(E_ALL);
 
-echo "<h2>Connexion TCP/IP</h2>\n";
+/* Autorise l'exécution infinie du script, en attente de connexion. */
+set_time_limit(0);
 
-/* Lit l'adresse IP du serveur de destination */
-$address = '127.0.0.1';
+/* Active le vidage implicite des buffers de sortie, pour que nous
+ * puissions voir ce que nous lisons au fur et à mesure. */
+ob_implicit_flush();
 
-/* Crée un socket TCP/IP. */
-$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-if ($socket === false) {
-    echo "socket_create() a échoué : raison :  " . socket_strerror(socket_last_error()) . "\n";
-} else {
-    echo "OK.\n";
+$address = '10.16.3.214';
+$port = 53000;
+ /* GEstion d'erreurs*/
+if (($sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP)) === false) {
+    echo "socket_create() a échoué : raison : " . socket_strerror(socket_last_error()) . "\n";
 }
 
-echo "Essai de connexion à '$address' sur le port '$service_port'...";
-$result = socket_connect($socket, $address, $service_port);
-if ($socket === false) {
-    echo "socket_connect() a échoué : raison : ($result) " . socket_strerror(socket_last_error($socket)) . "\n";
-} else {
-    echo "OK.\n";
+if (socket_bind($sock, $address, $port) === false) {
+    echo "socket_bind() a échoué : raison : " . socket_strerror(socket_last_error($sock)) . "\n";
 }
 
-$in = "enigme 6";
+if (socket_listen($sock, 5) === false) {
+    echo "socket_listen() a échoué : raison : " . socket_strerror(socket_last_error($sock)) . "\n";
+}
 
-echo "Envoi de la requête HTTP HEAD...";
-socket_write($socket, $in, strlen($in));
-echo "OK.\n";
+do {
+    if (($msgsock = socket_accept($sock)) === false) {
+        echo "socket_accept() a échoué : raison : " . socket_strerror(socket_last_error($sock)) . "\n";
+        break;
+    }
+    /* Send instructions. */
+    $msg = "gagner énigme 3";
+    socket_write($msgsock, $msg, strlen($msg));
 
+    do {
+        if (false === ($buf = socket_read($msgsock, 2048, PHP_NORMAL_READ))) {
+            echo "socket_read() a échoué : raison : " . socket_strerror(socket_last_error($msgsock)) . "\n";
+            break 2;
+        }
+        if (!$buf = trim($buf)) {
+            continue;
+        }
+        if ($buf == 'quit') {
+            break;
+        }
+        if ($buf == 'shutdown') {
+            socket_close($msgsock);
+            break 2;
+        }
+        $talkback = "PHP: You said '$buf'.\n";
+        socket_write($msgsock, $talkback, strlen($talkback));
+        echo "$buf\n";
+    } while (true);
+    socket_close($msgsock);
+} while (true);
+
+socket_close($sock);
 ?>

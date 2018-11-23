@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html>
 
-
     <head>
         <?php include 'connexion.php'; ?>
     </head>
-	
 	
 	
     <body>
