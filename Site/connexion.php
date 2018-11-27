@@ -11,6 +11,7 @@ ob_implicit_flush();
 
 $address = '10.16.3.214';
 $port = 53000;
+
  /* GEstion d'erreurs*/
 if (($sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP)) === false) {
     echo "socket_create() a échoué : raison : " . socket_strerror(socket_last_error()) . "\n";
@@ -30,7 +31,7 @@ do {
         break;
     }
     /* Send instructions. */
-    $msg = "gagner énigme 3";
+    $msg = "GAGNE:3";
     socket_write($msgsock, $msg, strlen($msg));
 
     do {
