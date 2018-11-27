@@ -209,58 +209,50 @@ void updateInput() {
 void enigme_2() {
     int i = 0;
     int etat = 0;
-    double barre = 0;
-    int old = 0;
-    int largeurBarre = 1;
-    LCD.FontModeConf(Font_16x32, FM_ANL_AAA, WHITE_NO_BAC);
+    double wBarre = 1,
+           hBarre = 0;
+    int oldW = 0,
+        oldH = 0;
+
+    int timer = 0;
     
+    LCD.FontModeConf(Font_16x32, FM_ANL_AAA, WHITE_NO_BAC);
     LCD.CleanAll(WHITE);
+    
     do {
-        if (barre < 128) {
-            updateInput();       
-            if(boutonB  && !oldBoutonB){
-                barre += 2;
-             }    
-                 
-            if(barre > 0)
-            {
-               barre -= 0.01;
-               if(barre < 0)
-                   barre = 0;
-            }
-
+        timer ++;
+        if (wBarre < 127) {
+            updateInput();
+            if(boutonB && !oldBoutonB) 
+                wBarre += 10;
             if(deltaPose != 0)
-            {
-              if(largeurBarre < 31)
-              {
-                 largeurBarre += abs(deltaPose);
+                 hBarre += abs(deltaPose)*0.5;
+
+            if(timer == 10) {     
+            wBarre -= 1;
+            hBarre -= 1;
+            timer = 0;
+            }
+            
+           if(wBarre < 0) wBarre = 0;
+           if(hBarre < 0) hBarre = 0;
+           if(hBarre > 31) hBarre = 31;
+
+          if (oldH != int(hBarre) || oldW != int(wBarre)) {
+
+            if(oldH < int(hBarre)) {
                  
-                 if(largeurBarre > 32)
-                 {
-                  largeurBarre = 32;
-                 }
-              }
+                LCD.DrawRectangleAt(0, 31-hBarre, 1+wBarre, 1+hBarre*2, WHITE_FILL);
             }
+            if(oldH > int(hBarre) || oldH > int(hBarre)) LCD.DrawRectangleAt(0, 31-hBarre, 1+wBarre, 1+hBarre*2, BLACK_FILL);
+            LCD.DispStringAt("0", 4, 15);
             
-             if(largeurBarre < 0)
-              {
-                largeurBarre = 1;
-              }
-
-             
-
-            if (old != int(barre)) {
-              old = int(barre);
-              largeurBarre-= 1;
-              LCD.CleanAll(WHITE);
-              LCD.DrawRectangleAt(0, 32-largeurBarre, barre, 1+largeurBarre*2, BLACK_FILL);
-              LCD.DispStringAt("0", 4, 20);
-            }
-            
-            //delay(20);
-            
-            Serial.println(barre);
-
+            oldH = int(hBarre);
+            oldW = int(wBarre);
+          }
+          
+          Serial.println(wBarre);
+          
         } else {
             Serial.println("GAGNER");
         }
