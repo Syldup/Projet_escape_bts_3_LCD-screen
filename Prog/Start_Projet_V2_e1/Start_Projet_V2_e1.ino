@@ -36,6 +36,7 @@ void setup() {
 
 void loop() {
     updateInput();
+    enigme_1();
     if (!loaded && !boutonA) {
       oldBoutonA = false;
       loaded = true;
@@ -207,14 +208,43 @@ void updateInput() {
 
 void enigme_1() {
   
-  
+    String nbCarre = "00";
+    int idx = 0;
     LCD.CleanAll(WHITE);
+    LCD.FontModeConf(Font_8x16_2, FM_ANL_AAA, BLACK_BAC);
+    LCD.CursorGotoXY(93, 35, 8, 16);
+    LCD.CursorConf(ON, 8);
+    LCD.DispStringAt(nbCarre.c_str() ,93 ,35 );
+    cursorOn = true;
     do{
+      updateInput();
+      LCD.DrawRectangleAt(0, 0, 128, 64, BLACK_NO_FILL);
+      LCD.DrawRectangleAt(0, 0, 90, 64, BLACK_NO_FILL);
+      LCD.DispStringAt("cb ?",93 ,10 );
+      if (deltaPose != 0) {
+            nbCarre[idx] = char((nbCarre[idx]+deltaPose-'0'+10)%10+'0');
+            LCD.DispStringAt(nbCarre.c_str() ,93 ,35 );
+          }
+      if(!oldBoutonB && boutonB) {
+        idx = 1-idx;
+        
+        LCD.CursorGotoXY(93+8*idx, 35, 8, 16);
+        LCD.DispStringAt(nbCarre.c_str(), 93, 35 );
+      }
+      if(nbCarre == "24")
+      {
+       LCD.DrawRectangleAt(0, 0, 50, 34, BLACK_NO_FILL);
+        
+      }
+           
+      
+      
+      
       
        
 
 
-      
+      Serial.println(idx);
         } while (!(boutonA && !oldBoutonA));
     loaded = false;
     delay(1000);
