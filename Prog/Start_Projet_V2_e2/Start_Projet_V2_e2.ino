@@ -240,9 +240,9 @@ void enigme_2() {
 
           if (oldH != int(hBarre) || oldW != int(wBarre)) {
 
-            if(oldH < int(hBarre)) {
+            if(oldH > int(hBarre)) {
                  
-                LCD.DrawRectangleAt(0, 31-hBarre, 1+wBarre, 1+hBarre*2, WHITE_FILL);
+                LCD.DrawRectangleAt(0, 32-hBarre, 1+wBarre+2, 3+hBarre*2, WHITE_FILL);
             }
             if(oldH > int(hBarre) || oldH > int(hBarre)) LCD.DrawRectangleAt(0, 31-hBarre, 1+wBarre, 1+hBarre*2, BLACK_FILL);
             LCD.DispStringAt("0", 4, 15);

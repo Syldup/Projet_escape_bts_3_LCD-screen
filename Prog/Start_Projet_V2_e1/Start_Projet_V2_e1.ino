@@ -247,5 +247,4 @@ void enigme_1() {
       Serial.println(idx);
         } while (!(boutonA && !oldBoutonA));
     loaded = false;
-    delay(1000);
 }
