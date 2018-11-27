@@ -37,7 +37,6 @@ void setup() {
 
 void loop() {
     updateInput();
-    enigme_4();
     if (!loaded && !boutonA) {
       oldBoutonA = false;
       loaded = true;
@@ -209,9 +208,9 @@ void updateInput() {
 }
 
 int nbSeq = 8,
-    idxSeq = 6;
+    idxSeq = 0;
 
-int listSeq[9] = {0, 11, 12, 21, 22, 23, 24, 25, 31};
+int listSeq[9] = {0, 11, 12, 21, 22, 23, 24, 25, -1};
 
 // sData[] -> {start_x, start_y, len_sequence, pas}
 // sequence[][0] -> Longueur des segments de la sequence
@@ -252,7 +251,6 @@ void setSequence(int idx) {
       case 5: sequence = s23; sData = s23Data; break;
       case 6:
       case 7: sequence = s24; sData = s24Data; break;
-      case 8: sequence = s31; sData = s31Data; break;
       default: sequence = s00; sData = s00Data; break;
     }
 }
@@ -291,15 +289,13 @@ void drawSequence(int idx, bool anim) {
           drawSequence(s24, s24Data, true, animOld);
           LCD.DrawCircleAt(55, 32, 19, BLACK_NO_FILL);
           LCD.DrawCircleAt(55+49, 32, 19, BLACK_NO_FILL);
+          LCD.DispStringAt("3", 5, 1);
+          tabEnigme[3] = "";
           delay(3000);
-          idxSeq ++;
-          char tmp[3];
-          sprintf(tmp, "%d", listSeq[idxSeq+1]/10);
-          LCD.DispStringAt(tmp, 5, 1);
-          setSequence(idxSeq+1);
-          drawSequence(idxSeq+1, true);
+          idxSeq = -2;
+          boutonA = true;
+          oldBoutonA = false;
           break;
-        case 8: drawSequence(s31, s31Data, true, true); break;
       }
     }
     LCD.DrawRectangleAt(33, 2, 44, 60, WHITE_FILL);
@@ -372,7 +368,7 @@ void enigme_4() {
             }
           }
           // Reset affichage sequence
-          if (idx == -1 || d != 0 && (d > sequence[idx][0] || a != sequence[idx][1])) {
+          if (idxSeq >= 0 && (idx == -1 || d != 0 && (d > sequence[idx][0] || a != sequence[idx][1]))) {
             x = sData[0];
             y = sData[1];
             idx = 0;

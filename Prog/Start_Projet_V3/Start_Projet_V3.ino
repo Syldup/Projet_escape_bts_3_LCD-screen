@@ -276,6 +276,8 @@ void enigme_3() {
             if (carteSelect == -1) {
               carteSelect = carte;
               draw_carte(carteSelect%5, carteSelect/5, true);
+              if (nbPaire == 0)
+                tabEnigme[2] = "";
             } else if (nbPaire != 0) {
               LCD.CursorConf(OFF, 6);
               cursorOn = false;
@@ -297,6 +299,9 @@ void enigme_3() {
               carteSelect = -1;
               LCD.CursorConf(ON, 6);
               cursorOn = true;
+            } else {
+              boutonA = true;
+              oldBoutonA = false;
             }
         }
       
