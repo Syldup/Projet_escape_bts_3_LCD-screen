@@ -209,46 +209,49 @@ void updateInput() {
 void enigme_2() {
     int i = 0;
     int etat = 0;
-    double wBarre = 1,
-           hBarre = 0;
-    int oldW = 0,
+    int wBarre = 1,
+        hBarre = 0,
+        oldW = 0,
         oldH = 0;
-
-    int timer = 0;
     
     LCD.FontModeConf(Font_16x32, FM_ANL_AAA, WHITE_NO_BAC);
-    LCD.CleanAll(WHITE);
+    //LCD.CleanAll(WHITE);
     
     do {
-        timer ++;
         if (wBarre < 127) {
+            delay(30);
             updateInput();
             if(boutonB && !oldBoutonB) 
                 wBarre += 10;
             if(deltaPose != 0)
-                 hBarre += abs(deltaPose)*0.5;
-
-            if(timer == 10) {     
+                 hBarre += abs(deltaPose);
+    
             wBarre -= 1;
-            hBarre -= 1;
-            timer = 0;
-            }
+            hBarre -= 2;
             
            if(wBarre < 0) wBarre = 0;
            if(hBarre < 0) hBarre = 0;
-           if(hBarre > 31) hBarre = 31;
+           if(hBarre > 63) hBarre = 63;
 
           if (oldH != int(hBarre) || oldW != int(wBarre)) {
+              if(oldH < int(hBarre) || oldW < int(wBarre))
+                LCD.DrawRectangleAt(0, 32-hBarre/2, 1+wBarre, 1+hBarre, BLACK_FILL);
 
-            if(oldH > int(hBarre)) {
-                 
-                LCD.DrawRectangleAt(0, 32-hBarre, 1+wBarre+2, 3+hBarre*2, WHITE_FILL);
-            }
-            if(oldH > int(hBarre) || oldH > int(hBarre)) LCD.DrawRectangleAt(0, 31-hBarre, 1+wBarre, 1+hBarre*2, BLACK_FILL);
-            LCD.DispStringAt("0", 4, 15);
-            
-            oldH = int(hBarre);
-            oldW = int(wBarre);
+              if(oldH > int(hBarre)) {
+                LCD.DrawRectangleAt(0, 31-oldH/2, 2+oldW, (oldH-hBarre)/2, WHITE_FILL);
+                LCD.DrawRectangleAt(0, 33+hBarre/2, 2+oldW, (oldH-hBarre)/2, WHITE_FILL);
+              }
+              if(oldW > int(wBarre)) {
+                LCD.DrawRectangleAt(1+wBarre, 32-hBarre/2, oldW-wBarre, 1+hBarre, WHITE_FILL);
+              }
+              LCD.DispStringAt("0", 4, 15);
+              LCD.DispStringAt("1", 50, 15);
+              LCD.DispStringAt("6", 100, 15);
+              
+              oldH = int(hBarre);
+              hBarre = int(hBarre);
+              oldW = int(wBarre);
+              wBarre = int(wBarre);
           }
           
           Serial.println(wBarre);
@@ -256,5 +259,6 @@ void enigme_2() {
         } else {
             Serial.println("GAGNER");
         }
+        
     } while (!(boutonA && !oldBoutonA));
 }
