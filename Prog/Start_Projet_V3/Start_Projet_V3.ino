@@ -23,8 +23,8 @@ long poseEnc1 = 0,
      deltaPose = 0;
 
 boolean interrupteurs[9] = {false};
-String addressIP[4] = {"10", "16", "42", "1"};
-String tabEnigme[4] = {"000", "000", "000", "000"};
+String addressIP[4] = {"127", "0", "0", "1"};
+String tabEnigme[4] = {"999", "999", "999", "999"};
 
 void setup() {
   LCD.Init();
@@ -45,9 +45,7 @@ void updateInput() {
     poseEnc1 = enc1.read();
     
     
-    if (poseEnc1 >= 4) deltaPose = 1;
-    else if (poseEnc1 <= -4) deltaPose = -1;
-    else deltaPose = 0;
+    deltaPose = poseEnc1/4;
     
     if (deltaPose != 0)
         enc1.write(0);
@@ -127,9 +125,7 @@ void updateAcceil() {
     
     LCD.DrawRectangleAt(34, 2, 60, 28, BLACK_NO_FILL);
     LCD.FontModeConf(Font_6x12, FM_ANL_AAA, BLACK_NO_BAC);
-    char tmp[25];
-    sprintf(tmp, "Enigme %d", edite);
-    LCD.DispStringAt(tmp, 37, 9);
+    LCD.DispStringAt("Enigme 3", 39, 9);
       
     LCD.DrawRectangleAt(2, 2, 28, 28, BLACK_NO_FILL);
     if (Xzone == 1 && Yzone == 1)
@@ -201,25 +197,41 @@ void enigme_1() {
     LCD.CleanAll(WHITE);
     LCD.FontModeConf(Font_8x16_2, FM_ANL_AAA, BLACK_BAC);
     LCD.CursorGotoXY(93, 35, 8, 16);
-    LCD.DispStringAt(nbCarre.c_str() ,93 ,35 );
+    LCD.DispStringAt(nbCarre.c_str(), 93, 35);
     LCD.CursorConf(ON, 8);
     cursorOn = true;
+    
+    LCD.DrawRectangleAt(0, 0, 128, 64, BLACK_NO_FILL);
+    LCD.DrawRectangleAt(0, 0, 89, 64, BLACK_NO_FILL);
+    LCD.DispStringAt("cb ?", 93, 10);
+      
+    LCD.DrawRectangleAt(0, 0, 20, 20, BLACK_NO_FILL);
+    LCD.DrawRectangleAt(19, 0, 21, 20, BLACK_NO_FILL);
+    LCD.DrawRectangleAt(0, 0, 40, 39, BLACK_NO_FILL);
+    LCD.DrawRectangleAt(39, 0, 50, 50, BLACK_NO_FILL);
+    LCD.DrawRectangleAt(50, 0, 20, 20, BLACK_NO_FILL);
+    LCD.DrawRectangleAt(0, 40, 20, 20, BLACK_NO_FILL);
+    LCD.DrawRectangleAt(58, 10, 20, 20, BLACK_NO_FILL);
+    LCD.DrawRectangleAt(52, 25 , 20, 20, BLACK_NO_FILL);
+    LCD.DrawRectangleAt(0, 30, 30, 30, BLACK_NO_FILL);
+    LCD.DrawRectangleAt(65, 38, 10, 10, BLACK_NO_FILL);
     do {
-        updateInput();
-        LCD.DrawRectangleAt(0, 0, 128, 64, BLACK_NO_FILL);
-        LCD.DrawRectangleAt(0, 0, 90, 64, BLACK_NO_FILL);
-        LCD.DispStringAt("cb ?",93 ,10 );
-        if (deltaPose != 0) {
-            nbCarre[idx] = char((nbCarre[idx]+deltaPose-'0'+10)%10+'0');
-            LCD.DispStringAt(nbCarre.c_str() ,93 ,35 );
-        }
-        if(!oldBoutonB && boutonB) {
-            idx = 1-idx;
-            LCD.CursorGotoXY(93+8*idx, 35, 8, 16);
-            LCD.DispStringAt(nbCarre.c_str(), 93, 35 );
-        }
-        if(nbCarre == "24")
-            LCD.DrawRectangleAt(0, 0, 50, 34, BLACK_NO_FILL);
+      updateInput();
+      if (deltaPose != 0) {
+        nbCarre[idx] = char((nbCarre[idx]+deltaPose-'0'+10)%10+'0');
+        LCD.DispStringAt(nbCarre.c_str() ,93 ,35 );
+      }
+      if(!oldBoutonB && boutonB) {
+        idx = 1-idx;
+        LCD.CursorGotoXY(93+8*idx, 35, 8, 16);
+        LCD.DispStringAt(nbCarre.c_str(), 93, 35 );
+      }
+      if(nbCarre == "11") {
+          delay(1000);
+          tabEnigme[0] = "";
+          boutonA = true;
+          oldBoutonA = false;
+       }
     } while (!(boutonA && !oldBoutonA));
     LCD.CursorConf(OFF, 8);
     cursorOn = false;
@@ -228,46 +240,55 @@ void enigme_1() {
 
 
 void enigme_2() {
-    int i = 0;
-    int etat = 0;
-    double wBarre = 1,
-           hBarre = 0;
-    int oldW = 0,
+    int wBarre = 1,
+        hBarre = 0,
+        oldW = 0,
         oldH = 0;
-    int timer = 0;
     
     LCD.FontModeConf(Font_16x32, FM_ANL_AAA, WHITE_NO_BAC);
     LCD.CleanAll(WHITE);
     do {
-        timer ++;
+        delay(30);
         updateInput();
         if(boutonB && !oldBoutonB) wBarre += 10;
-        if(deltaPose != 0) hBarre += abs(deltaPose)*0.5;
+        if(deltaPose != 0) hBarre += abs(deltaPose);
+        delay(30);
+        updateInput();
+        if(boutonB && !oldBoutonB) wBarre += 10;
+        if(deltaPose != 0) hBarre += abs(deltaPose);
         
-        if(timer == 10) {     
-          wBarre -= 1;
-          hBarre -= 1;
-          timer = 0;
-        }
+        wBarre -= 1;
+        hBarre -= 2;
         
         if(wBarre < 0) wBarre = 0;
+        if(hBarre < 0) hBarre = 0;
         if(wBarre >= 127) {
           boutonA = true;
           oldBoutonA = false;
           tabEnigme[1] = "";
+          delay(300);
         }
-        if(hBarre < 0) hBarre = 0;
-        if(hBarre > 31) hBarre = 31;
-        
+        if(hBarre > 63) hBarre = 63;
+
         if (oldH != int(hBarre) || oldW != int(wBarre)) {
-            if(oldH > int(hBarre))
-              LCD.DrawRectangleAt(0, 32-hBarre, 1+wBarre+2, 3+hBarre*2, WHITE_FILL);
-            if(oldH > int(hBarre) || oldH > int(hBarre))
-              LCD.DrawRectangleAt(0, 31-hBarre, 1+wBarre, 1+hBarre*2, BLACK_FILL);
-            LCD.DispStringAt("0", 4, 15);
+            if(oldH < int(hBarre) || oldW < int(wBarre))
+              LCD.DrawRectangleAt(0, 32-hBarre/2, 1+wBarre, 1+hBarre, BLACK_FILL);
+
+            if(oldH > int(hBarre)) {
+              LCD.DrawRectangleAt(0, 31-oldH/2, 2+oldW, (oldH-hBarre)/2, WHITE_FILL);
+              LCD.DrawRectangleAt(0, 33+hBarre/2, 2+oldW, (oldH-hBarre)/2, WHITE_FILL);
+            }
+            if(oldW > int(wBarre)) {
+              LCD.DrawRectangleAt(1+wBarre, 32-hBarre/2, oldW-wBarre, 1+hBarre, WHITE_FILL);
+            }
+            LCD.DispCharAt("0", 4, 15);
+            LCD.DispCharAt("1", 50, 15);
+            LCD.DispCharAt("6", 100, 15);
             
             oldH = int(hBarre);
+            hBarre = int(hBarre);
             oldW = int(wBarre);
+            wBarre = int(wBarre);
         }
     } while (!(boutonA && !oldBoutonA));
     loaded = false;
@@ -275,10 +296,10 @@ void enigme_2() {
 
 
 int tab_carte [5][4] = {{197,  19, 112, 179},
-                       {253, 197,  59,  19},
-                       {247,  42, 179, 187},
-                       {109, 109, 187, 247},
-                       { -1, 253,  59, 112}};/*/
+                        {253, 197,  59,  19},
+                        {247,   2, 179, 187},
+                        {109, 109, 187, 247},
+                        { -1, 253,  59, 112}};/*/
 int tab_carte [5][4] = {{43, 43, 43, 43},
                        {43, 43, 43, 43},
                        {43, 42, 43, 43},
@@ -336,7 +357,7 @@ void enigme_3() {
               
               draw_carte(carteSelect%5, carteSelect/5, true);
               draw_carte(carte%5, carte/5, true);
-              delay(200);
+              delay(1500);
               if (tab_carte[carteSelect%5][carteSelect/5] == tab_carte[carte%5][carte/5]) {
                 tab_carte[carteSelect%5][carteSelect/5] = -1;
                 tab_carte[carte%5][carte/5] = -1;
@@ -388,7 +409,7 @@ void draw_carte(int x, int y, boolean showNB) {
 
 
 int nbSeq = 8,
-    idxSeq = 0;
+    idxSeq = 3;
 
 int listSeq[9] = {0, 11, 12, 21, 22, 23, 24, 25, -1};
 
@@ -418,9 +439,6 @@ int s23[4][2] = {{5, 2}, {3, 3}, {2, 0}, {2, 1}};
 
 int s24Data[4] = {37, 23, 9, 3};
 int s24[9][2] = {{5, 1}, {1, 3}, {2, 0}, {1, 3}, {1, 0}, {6, 3}, {5, 0}, {4, 1}, {5, 2}};
-
-int s31Data[4] = {55, 41, 3, 3};
-int s31[3][2] = {{1, 3}, {1, 2}, {2, 1}};
 
 void setSequence(int idx) {
     switch (idx) {
@@ -469,7 +487,7 @@ void drawSequence(int idx, bool anim) {
           drawSequence(s24, s24Data, true, animOld);
           LCD.DrawCircleAt(55, 32, 19, BLACK_NO_FILL);
           LCD.DrawCircleAt(55+49, 32, 19, BLACK_NO_FILL);
-          LCD.DispStringAt("3", 5, 1);
+          LCD.DispStringAt("5", 5, 1);
           tabEnigme[3] = "";
           delay(3000);
           idxSeq = -2;
@@ -505,9 +523,9 @@ void enigme_4() {
     for (int i=0; i<16; i++)
       LCD.DrawDotAt(7+i, 23-i, BLACK);
     LCD.FontModeConf(Font_8x16_2, FM_ANL_AAA, BLACK_BAC);
-    LCD.DispStringAt("3", 16, 16);
+    LCD.DispStringAt("5", 16, 16);
     char tmp[3];
-    sprintf(tmp, "%d", listSeq[idxSeq]/10);
+    sprintf(tmp, "%d", listSeq[idxSeq]*10);
     LCD.DispStringAt(tmp, 5, 1);
     
     setSequence(idxSeq);
@@ -540,7 +558,7 @@ void enigme_4() {
             if (idx >= sData[2]) {  // Si fin sequence
               idx = -1;
               char tmp[3];
-              sprintf(tmp, "%d", listSeq[idxSeq+1]/10);
+              sprintf(tmp, "%d", listSeq[idxSeq+1]%10);
               LCD.DispStringAt(tmp, 5, 1);
               setSequence(idxSeq+1);
               drawSequence(idxSeq+1, true);
