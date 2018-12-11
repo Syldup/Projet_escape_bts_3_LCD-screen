@@ -44,7 +44,11 @@ void updateInput() {
     
     poseEnc1 = enc1.read();
     
-    deltaPose = poseEnc1/4;
+    
+    if (poseEnc1 >= 4) deltaPose = 1;
+    else if (poseEnc1 <= -4) deltaPose = -1;
+    else deltaPose = 0;
+    
     if (deltaPose != 0)
         enc1.write(0);
 }
@@ -190,38 +194,86 @@ void drawLine(int x, int y, int l, boolean horizontal) {
     }
 }
 
+
 void enigme_1() {
+    String nbCarre = "00";
+    int idx = 0;
     LCD.CleanAll(WHITE);
-    delay(1000);
+    LCD.FontModeConf(Font_8x16_2, FM_ANL_AAA, BLACK_BAC);
+    LCD.CursorGotoXY(93, 35, 8, 16);
+    LCD.DispStringAt(nbCarre.c_str() ,93 ,35 );
+    LCD.CursorConf(ON, 8);
+    cursorOn = true;
+    do {
+        updateInput();
+        LCD.DrawRectangleAt(0, 0, 128, 64, BLACK_NO_FILL);
+        LCD.DrawRectangleAt(0, 0, 90, 64, BLACK_NO_FILL);
+        LCD.DispStringAt("cb ?",93 ,10 );
+        if (deltaPose != 0) {
+            nbCarre[idx] = char((nbCarre[idx]+deltaPose-'0'+10)%10+'0');
+            LCD.DispStringAt(nbCarre.c_str() ,93 ,35 );
+        }
+        if(!oldBoutonB && boutonB) {
+            idx = 1-idx;
+            LCD.CursorGotoXY(93+8*idx, 35, 8, 16);
+            LCD.DispStringAt(nbCarre.c_str(), 93, 35 );
+        }
+        if(nbCarre == "24")
+            LCD.DrawRectangleAt(0, 0, 50, 34, BLACK_NO_FILL);
+    } while (!(boutonA && !oldBoutonA));
+    LCD.CursorConf(OFF, 8);
+    cursorOn = false;
+    loaded = false;
 }
+
 
 void enigme_2() {
     int i = 0;
     int etat = 0;
-    double barre = 0;
+    double wBarre = 1,
+           hBarre = 0;
+    int oldW = 0,
+        oldH = 0;
+    int timer = 0;
     
+    LCD.FontModeConf(Font_16x32, FM_ANL_AAA, WHITE_NO_BAC);
     LCD.CleanAll(WHITE);
     do {
-        if (barre < 128) {
-            updateInput();
-            
-            if(boutonB && !oldBoutonB)
-                barre += 1;
+        timer ++;
+        updateInput();
+        if(boutonB && !oldBoutonB) wBarre += 10;
+        if(deltaPose != 0) hBarre += abs(deltaPose)*0.5;
         
-            if(barre > 0)
-            {
-               barre -= 0.03;
-               if(barre < 0)
-                   barre = 0;
-            }
-            Serial.println(barre);
-        } else {
-            Serial.println("GAGNER");
+        if(timer == 10) {     
+          wBarre -= 1;
+          hBarre -= 1;
+          timer = 0;
+        }
+        
+        if(wBarre < 0) wBarre = 0;
+        if(wBarre >= 127) {
+          boutonA = true;
+          oldBoutonA = false;
+          tabEnigme[1] = "";
+        }
+        if(hBarre < 0) hBarre = 0;
+        if(hBarre > 31) hBarre = 31;
+        
+        if (oldH != int(hBarre) || oldW != int(wBarre)) {
+            if(oldH > int(hBarre))
+              LCD.DrawRectangleAt(0, 32-hBarre, 1+wBarre+2, 3+hBarre*2, WHITE_FILL);
+            if(oldH > int(hBarre) || oldH > int(hBarre))
+              LCD.DrawRectangleAt(0, 31-hBarre, 1+wBarre, 1+hBarre*2, BLACK_FILL);
+            LCD.DispStringAt("0", 4, 15);
+            
+            oldH = int(hBarre);
+            oldW = int(wBarre);
         }
     } while (!(boutonA && !oldBoutonA));
+    loaded = false;
 }
 
-/*
+
 int tab_carte [5][4] = {{197,  19, 112, 179},
                        {253, 197,  59,  19},
                        {247,  42, 179, 187},
@@ -334,7 +386,225 @@ void draw_carte(int x, int y, boolean showNB) {
     } else LCD.DrawRectangleAt(i, j, 24, 14, WHITE_FILL);
 }
 
+
+int nbSeq = 8,
+    idxSeq = 0;
+
+int listSeq[9] = {0, 11, 12, 21, 22, 23, 24, 25, -1};
+
+// sData[] -> {start_x, start_y, len_sequence, pas}
+// sequence[][0] -> Longueur des segments de la sequence
+// sequence[][1] -> Orientation des segments de la sequence
+int* sData;
+int (*sequence)[2];
+
+int s00Data[4] = {53, 30, 5, 5};
+int s00[5][2] = {{1, 0}, {2, 3}, {2, 2}, {4, 1}, {3, 0}};
+
+int s11Data[4] = {49, 22, 4, 4};
+int s11[4][2] = {{4, 1}, {2, 0}, {4, 3}, {2, 2}};
+
+int s12Data[4] = {45, 26, 4, 4};
+int s12[4][2] = {{2, 1}, {4, 0}, {2, 3}, {3, 2}};
+
+int s21Data[4] = {55, 41, 3, 3};
+int s21[3][2] = {{1, 3}, {1, 2}, {2, 1}};
+
+int s22Data[4] = {40, 44, 5, 3};
+int s22[5][2] = {{9, 3}, {8, 0}, {2, 1}, {2, 2}, {2, 3}};
+
+int s23Data[4] = {58, 29, 4, 3};
+int s23[4][2] = {{5, 2}, {3, 3}, {2, 0}, {2, 1}};
+
+int s24Data[4] = {37, 23, 9, 3};
+int s24[9][2] = {{5, 1}, {1, 3}, {2, 0}, {1, 3}, {1, 0}, {6, 3}, {5, 0}, {4, 1}, {5, 2}};
+
+int s31Data[4] = {55, 41, 3, 3};
+int s31[3][2] = {{1, 3}, {1, 2}, {2, 1}};
+
+void setSequence(int idx) {
+    switch (idx) {
+      case 1: sequence = s11; sData = s11Data; break;
+      case 2: sequence = s12; sData = s12Data; break;
+      case 3: sequence = s21; sData = s21Data; break;
+      case 4: sequence = s22; sData = s22Data; break;
+      case 5: sequence = s23; sData = s23Data; break;
+      case 6:
+      case 7: sequence = s24; sData = s24Data; break;
+      default: sequence = s00; sData = s00Data; break;
+    }
+}
+
+void drawSequence(int idx, bool anim) {
+    if (anim) {
+      bool animOld = listSeq[idx] == listSeq[idxSeq];
+      LCD.DrawRectangleAt(82, 2, 44, 60, WHITE_FILL);
+      switch (idx) {
+        case 0: drawSequence(s00, s00Data, true, true); break;
+        case 1: drawSequence(s11, s11Data, true, true); break;
+        case 2:
+          drawSequence(s11, s11Data, true, animOld);
+          drawSequence(s12, s12Data, true, true);
+          break;
+        case 3: drawSequence(s21, s21Data, true, true); break;
+        case 4:
+          drawSequence(s21, s21Data, true, animOld);
+          drawSequence(s22, s22Data, true, true);
+          break;
+        case 5:
+          drawSequence(s21, s21Data, true, animOld);
+          drawSequence(s22, s22Data, true, animOld);
+          drawSequence(s23, s23Data, true, true);
+          break;
+        case 6:
+          drawSequence(s21, s21Data, true, animOld);
+          drawSequence(s22, s22Data, true, animOld);
+          drawSequence(s23, s23Data, true, animOld);
+          drawSequence(s24, s24Data, true, true);
+          break;
+        case 7:
+          drawSequence(s21, s21Data, true, animOld);
+          drawSequence(s22, s22Data, true, animOld);
+          drawSequence(s23, s23Data, true, animOld);
+          drawSequence(s24, s24Data, true, animOld);
+          LCD.DrawCircleAt(55, 32, 19, BLACK_NO_FILL);
+          LCD.DrawCircleAt(55+49, 32, 19, BLACK_NO_FILL);
+          LCD.DispStringAt("3", 5, 1);
+          tabEnigme[3] = "";
+          delay(3000);
+          idxSeq = -2;
+          boutonA = true;
+          oldBoutonA = false;
+          break;
+      }
+    }
+    LCD.DrawRectangleAt(33, 2, 44, 60, WHITE_FILL);
+    switch (idx) {
+      case 6: drawSequence(s23, s23Data, false, false);
+      case 5: drawSequence(s22, s22Data, false, false);
+      case 4: drawSequence(s21, s21Data, false, false); break;
+      case 2: drawSequence(s11, s11Data, false, false); break;
+    }
+}
+
 void enigme_4() {
     LCD.CleanAll(WHITE);
-    delay(1000);
+    delay(500);
+    LCD.DrawCircleAt(15, 48, 2, BLACK_NO_FILL);
+    delay(300);
+    for (int i=-1; i<5; i++) {
+      LCD.DrawVLineAt(48-4+abs(i), 48+4-abs(i), 15+8+i, BLACK);
+      LCD.DrawHLineAt(15-4+abs(i), 15+4-abs(i), 48+8+i, BLACK);
+      LCD.DrawVLineAt(48-4+abs(i), 48+4-abs(i), 15-8-i, BLACK);
+      LCD.DrawHLineAt(15-4+abs(i), 15+4-abs(i), 48-8-i, BLACK);
+      delay(200);
+    }
+    LCD.DrawRectangleAt(31, 0, 48, 64, BLACK_NO_FILL);
+    LCD.DrawRectangleAt(80, 0, 48, 64, BLACK_NO_FILL);
+    delay(300);
+    for (int i=0; i<16; i++)
+      LCD.DrawDotAt(7+i, 23-i, BLACK);
+    LCD.FontModeConf(Font_8x16_2, FM_ANL_AAA, BLACK_BAC);
+    LCD.DispStringAt("3", 16, 16);
+    char tmp[3];
+    sprintf(tmp, "%d", listSeq[idxSeq]/10);
+    LCD.DispStringAt(tmp, 5, 1);
+    
+    setSequence(idxSeq);
+    drawSequence(idxSeq, true);
+    
+    int x = sData[0], // Coordonner x sur l'écran
+        y = sData[1], // Coordonner y sur l'écran
+        idx = 0, // index du segment en coure
+        d = 0, // Longueur du segment en coure
+        a = 0; // Orientation de segment en coure
+    
+    LCD.CursorGotoXY(x, y, sData[3], sData[3]);
+    LCD.CursorConf(ON, 8);
+    cursorOn = true;
+    
+    do {
+        updateInput();
+        
+        if (!oldBoutonB && boutonB) { // Avennce de 1 le segment
+          LCD.CursorConf(OFF, 8);
+          LCD.DrawRectangleAt(x, y, sData[3], sData[3], BLACK_FILL);
+          x = (x + (1-a)%2*sData[3] + 128)%128;
+          y = (y + (2-a)%2*sData[3] + 64)%64;
+          
+          d ++;
+          if (d == sequence[idx][0] && a == sequence[idx][1]) { // Si fin du segment
+            idx ++;
+            d = 0;
+            deltaPose += 4;
+            if (idx >= sData[2]) {  // Si fin sequence
+              idx = -1;
+              char tmp[3];
+              sprintf(tmp, "%d", listSeq[idxSeq+1]/10);
+              LCD.DispStringAt(tmp, 5, 1);
+              setSequence(idxSeq+1);
+              drawSequence(idxSeq+1, true);
+              idxSeq ++;
+            }
+          }
+          // Reset affichage sequence
+          if (idxSeq >= 0 && (idx == -1 || d != 0 && (d > sequence[idx][0] || a != sequence[idx][1]))) {
+            x = sData[0];
+            y = sData[1];
+            idx = 0;
+            d = 0;
+            deltaPose += 4;
+            drawSequence(idxSeq, false);
+          }
+          LCD.CursorConf(ON, 8);
+          LCD.CursorGotoXY(x, y, sData[3], sData[3]);
+        }
+        
+        if (!loaded || deltaPose != 0) {
+          a = (a+deltaPose+4)%4;
+          if (a == sequence[idx][1])
+               LCD.DrawRectangleAt(14, 47, 3, 3, BLACK_FILL);
+          else LCD.DrawRectangleAt(14, 47, 3, 3, WHITE_FILL);
+          
+          LCD.DrawDotAt(15+10, 48, WHITE);
+          LCD.DrawDotAt(15, 48+10, WHITE);
+          LCD.DrawDotAt(15-10, 48, WHITE);
+          LCD.DrawDotAt(15, 48-10, WHITE);
+          LCD.DrawVLineAt(47, 49, 15+9, WHITE);
+          LCD.DrawHLineAt(14, 16, 48+9, WHITE);
+          LCD.DrawVLineAt(47, 49, 15-9, WHITE);
+          LCD.DrawHLineAt(14, 16, 48-9, WHITE);
+          if (a == 0)
+            LCD.DrawRectangleAt(14+10, 47, 2, 3, BLACK_NO_FILL);
+          else if (a == 1)
+            LCD.DrawRectangleAt(14, 47+10, 3, 2, BLACK_NO_FILL);
+          else if (a == 2)
+            LCD.DrawRectangleAt(15-10, 47, 2, 3, BLACK_NO_FILL);
+          else if (a == 3)
+            LCD.DrawRectangleAt(14, 48-10, 3, 2, BLACK_NO_FILL);
+        }
+        
+        while (!loaded) {
+          updateInput();
+          loaded = !boutonA;
+        }
+        
+    } while (!(boutonA && !oldBoutonA));
+    deltaPose = 0;
+    loaded = false;
+    LCD.CursorConf(OFF, 8);
+    cursorOn = false;
+}
+
+void drawSequence(int (*sequence)[2], int sData[4], bool translat, bool anime) {
+  int x = sData[0],
+      y = sData[1];
+  if (translat) x += 49;
+  for (int i=0; i<sData[2]; i++)
+    for (int j=0; j<sequence[i][0]; j++) {
+      if (anime) delay(200);
+      LCD.DrawRectangleAt(x, y, sData[3], sData[3], BLACK_FILL);
+      x = (x + (1-sequence[i][1])%2*sData[3] + 128)%128;
+      y = (y + (2-sequence[i][1])%2*sData[3] + 64)%64;
+    }
 }
