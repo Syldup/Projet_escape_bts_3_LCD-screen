@@ -219,7 +219,7 @@ void enigme_1() {
     do{
       updateInput();
       LCD.DrawRectangleAt(0, 0, 128, 64, BLACK_NO_FILL);
-      LCD.DrawRectangleAt(0, 0, 90, 64, BLACK_NO_FILL);
+      LCD.DrawRectangleAt(0, 0, 89, 64, BLACK_NO_FILL);
       LCD.DispStringAt("cb ?",93 ,10 );
       if (deltaPose != 0) {
             nbCarre[idx] = char((nbCarre[idx]+deltaPose-'0'+10)%10+'0');
@@ -231,20 +231,28 @@ void enigme_1() {
         LCD.CursorGotoXY(93+8*idx, 35, 8, 16);
         LCD.DispStringAt(nbCarre.c_str(), 93, 35 );
       }
-      if(nbCarre == "24")
+      if(nbCarre == "11")
       {
-       LCD.DrawRectangleAt(0, 0, 50, 34, BLACK_NO_FILL);
-        
+        delay(300);
+        tabEnigme[0] = "";
+        boutonA = true;
+        oldBoutonA = false;
       }
-           
-      
-      
-      
-      
-       
+       LCD.DrawRectangleAt(0, 0, 20, 20, BLACK_NO_FILL);
+       LCD.DrawRectangleAt(19, 0, 21, 20, BLACK_NO_FILL);
+       LCD.DrawRectangleAt(0, 0, 40, 39, BLACK_NO_FILL);
+       LCD.DrawRectangleAt(39, 0, 50, 50, BLACK_NO_FILL);
+       LCD.DrawRectangleAt(50, 0, 20, 20, BLACK_NO_FILL);
+       LCD.DrawRectangleAt(0, 40, 20, 20, BLACK_NO_FILL);
+       LCD.DrawRectangleAt(58, 10, 20, 20, BLACK_NO_FILL);
+       LCD.DrawRectangleAt(52, 25 , 20, 20, BLACK_NO_FILL);
+       LCD.DrawRectangleAt(0, 30, 30, 30, BLACK_NO_FILL);
+       LCD.DrawRectangleAt(65, 38, 10, 10, BLACK_NO_FILL);
 
-
+  
       Serial.println(idx);
         } while (!(boutonA && !oldBoutonA));
+        LCD.CursorConf(OFF, 8);
+        cursorOn = false;
     loaded = false;
 }
